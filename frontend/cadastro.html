@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro</title>
+</head>
+<body>
+  <header>
+    <a href="index.html">Home</a>
+  </header>
+  <h1>Cadastro</h1>
+  <button onclick="mostrarFormulario('empresa')">Sou Empresa</button>
+  <button onclick="mostrarFormulario('parceiro')">Sou Parceiro</button>
+
+  <form id="form-cadastro" style="display:none;">
+    <input type="hidden" id="tipo" name="tipo" />
+    <input type="text" id="usuario" placeholder="Usuário" required />
+    <input type="password" id="senha" placeholder="Senha" required />
+    <button type="submit">Cadastrar</button>
+  </form>
+
+  <script>
+    function mostrarFormulario(tipo) {
+      document.getElementById('tipo').value = tipo;
+      document.getElementById('form-cadastro').style.display = 'block';
+    }
+
+    document.getElementById('form-cadastro').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const tipo = document.getElementById('tipo').value;
+      const usuario = document.getElementById('usuario').value;
+      const senha = document.getElementById('senha').value;
+
+      if (!tipo) {
+        alert("Selecione se você é empresa ou parceiro.");
+        return;
+      }
+
+      const dados = { tipo, usuario, senha };
+
+      try {
+        const resposta = await fetch('http://localhost:3000/api/cadastrar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dados)
+        });
+
+        const resultado = await resposta.json();
+
+        if (resposta.ok && resultado.redirecionar) {
+          window.location.href = resultado.redirecionar;
+        } else {
+          alert(resultado.mensagem || 'Erro ao cadastrar');
+        }
+      } catch (erro) {
+        alert('Erro ao se conectar com o servidor.');
+        console.error(erro);
+      }
+    });
+  </script>
+</body>
+</html>

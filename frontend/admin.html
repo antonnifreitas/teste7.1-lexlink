@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Administrativo</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1, h2 { color: #333; }
+    textarea { width: 100%; height: 80px; margin-bottom: 10px; }
+    button { padding: 8px 16px; cursor: pointer; }
+    ul { padding-left: 20px; }
+    section { margin-bottom: 30px; border-bottom: 1px solid #ccc; padding-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Painel Administrativo</h1>
+
+  <section>
+    <h2>Diligências Recebidas</h2>
+    <ul id="lista-diligencias"></ul>
+  </section>
+
+  <section>
+    <h2>Empresas Cadastradas</h2>
+    <ul id="lista-empresas"></ul>
+  </section>
+
+  <section>
+    <h2>Parceiros Cadastrados</h2>
+    <ul id="lista-parceiros"></ul>
+  </section>
+
+  <section>
+    <h2>Mensagem para Página de Login - Empresa</h2>
+    <textarea id="mensagem-empresa" placeholder="Digite a mensagem para as empresas..."></textarea>
+    <button onclick="salvarMensagem('empresa')">Salvar Mensagem Empresa</button>
+  </section>
+
+  <section>
+    <h2>Mensagem para Página de Login - Parceiro</h2>
+    <textarea id="mensagem-parceiro" placeholder="Digite a mensagem para os parceiros..."></textarea>
+    <button onclick="salvarMensagem('parceiro')">Salvar Mensagem Parceiro</button>
+  </section>
+
+  <!-- NOVO BLOCO: MENSAGENS ENVIADAS PELAS EMPRESAS -->
+  <section>
+    <h2>Mensagens Recebidas das Empresas</h2>
+    <ul id="mensagens-empresa-para-admin"></ul>
+  </section>
+
+  <script>
+    async function carregarDados() {
+      try {
+        const empresas = await fetch('/api/empresas').then(res => res.json());
+        const parceiros = await fetch('/api/parceiros').then(res => res.json());
+        const msgEmpresa = await fetch('/api/mensagem-empresa').then(res => res.json());
+        const msgParceiro = await fetch('/api/mensagem-parceiro').then(res => res.json());
+        const mensagensEmpresa = await fetch('/api/mensagens-empresa-para-admin').then(res => res.json());
+
+        const listaEmpresas = document.getElementById('lista-empresas');
+        const listaParceiros = document.getElementById('lista-parceiros');
+        const textareaEmpresa = document.getElementById('mensagem-empresa');
+        const textareaParceiro = document.getElementById('mensagem-parceiro');
+        const listaMensagens = document.getElementById('mensagens-empresa-para-admin');
+
+        listaEmpresas.innerHTML = empresas.map((e, i) => `<li>${i + 1}. Usuário: ${e.usuario}</li>`).join('');
+        listaParceiros.innerHTML = parceiros.map((p, i) => `<li>${i + 1}. Usuário: ${p.usuario}</li>`).join('');
+        textareaEmpresa.value = msgEmpresa.mensagem || '';
+        textareaParceiro.value = msgParceiro.mensagem || '';
+
+        listaMensagens.innerHTML = mensagensEmpresa.map((m, i) =>
+          `<li><strong>${new Date(m.data).toLocaleString()}:</strong> ${m.mensagem}</li>`
+        ).join('');
+        
+      } catch (erro) {
+        alert('Erro ao carregar dados do backend.');
+        console.error(erro);
+      }
+    }
+
+    async function salvarMensagem(tipo) {
+      const mensagem = document.getElementById(`mensagem-${tipo}`).value;
+
+      const endpoint = tipo === 'empresa'
+        ? '/api/mensagem-empresa'
+        : '/api/mensagem-parceiro';
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mensagem })
+        });
+
+        const dados = await res.json();
+        if (dados.sucesso) {
+          alert(`Mensagem para ${tipo} atualizada com sucesso.`);
+        } else {
+          alert(`Erro ao salvar mensagem para ${tipo}.`);
+        }
+      } catch (erro) {
+        alert(`Erro na conexão com o servidor.`);
+        console.error(erro);
+      }
+    }
+
+    carregarDados();
+    setInterval(carregarDados, 5000);
+  </script>
+
+<script>
+  async function carregarDiligencias() {
+    try {
+      const resposta = await fetch('/api/diligencias');
+      const dados = await resposta.json();
+      const lista = document.getElementById('lista-diligencias');
+      lista.innerHTML = '';
+
+      if (dados.length === 0) {
+        lista.innerHTML = '<li>Nenhuma diligência recebida ainda.</li>';
+        return;
+      }
+
+      dados.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <strong>Diligência ${index + 1}</strong><br>
+          Valor: R$ ${item.valor}<br>
+          Local: ${item.destinatario}<br>
+          Descrição: ${item.descricao}<br>
+          Data: ${item.data}
+        `;
+        li.classList.add('mb-3', 'p-2', 'border', 'rounded');
+        lista.appendChild(li);
+      });
+    } catch (erro) {
+      console.error('Erro ao carregar diligências:', erro);
+    }
+  }
+
+  carregarDiligencias();
+  setInterval(carregarDiligencias, 5000); // Atualiza automaticamente
+</script>
+
+</body>
+
+</html>

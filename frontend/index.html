@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+  <link href="styles.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <div>
+    <img src="assets/LogoLexLink.png" class="img-fluid p-3" alt="Logo Lex Link" id="src" width="100%">
+  </div>
+
+  <section class="bg-white">
+    <h1>Login</h1>
+    <form class="d-flex row mt-5 mx-5 gap-4">
+      <input type="text" placeholder="Usuário" required>
+      <input type="password" placeholder="Senha" required>
+      <button type="submit">Entrar</button>
+    </form>
+    <div class="divCheck">
+      <input class="#" type="checkbox" />
+      <span class="h5">Lembrar Senha</span>
+    </div>
+    <a class="flex-box" href="cadastro.html">Cadastrar</a>
+
+    <!-- Opção cadastro na tela inicial -->
+    <h1 class="m-5">Cadastro</h1>
+    <button onclick="mostrarFormulario('empresa')">Sou Empresa</button>
+    <button onclick="mostrarFormulario('parceiro')">Sou Parceiro</button>
+    
+    <form id="form-cadastro" style="display:none;">
+      <input type="hidden" id="tipo" name="tipo" />
+      <input type="text" id="usuario" placeholder="Usuário" required />
+      <input type="password" id="senha" placeholder="Senha" required />
+      <button type="submit">Cadastrar</button>
+    </form>
+  </section>
+
+
+  <main>
+    <div class="d-flex flex-lg-row align-items-center justify-content-around gap-3 px-3 w-100">
+      <div class="divs-facilidades d-flex align-items-center w-25">
+        <img class="rounded float-left w-100 py-5" src="./assets/Logo-rodape.svg" alt="">
+      </div>
+
+      <div class="d-flex flex-column text-center mx-auto w-50">
+        <a href="login-empresas.html">Login Empresas</a>
+        <a href="login-parceiro.html">Login Parceiros</a>
+        <a href="admin.html">Administração</a>
+      </div>
+
+      <div class="d-flex flex-column align-items-end w-25">
+        <a class="bi bi-instagram">Instagram</a>
+        <a class="bi bi-globe">Site</a>
+        <a class="bi bi-envelope-fill">Email</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="text-center">
+    <p class="py-3 text-white px-3">Lex Link <i class="bi bi-c-circle"></i> Desenvolvido por AntonniF.</p>
+  </footer>
+
+  <!-- Opção cadastro na tela inicial -->
+  <script>
+    function mostrarFormulario(tipo) {
+      document.getElementById('tipo').value = tipo;
+      document.getElementById('form-cadastro').style.display = 'block';
+    }
+
+    document.getElementById('form-cadastro').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const tipo = document.getElementById('tipo').value;
+      const usuario = document.getElementById('usuario').value;
+      const senha = document.getElementById('senha').value;
+
+      if (!tipo) {
+        alert("Selecione se você é empresa ou parceiro.");
+        return;
+      }
+
+      const dados = { tipo, usuario, senha };
+
+      try {
+        const resposta = await fetch('http://localhost:3000/api/cadastrar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dados)
+        });
+
+        const resultado = await resposta.json();
+
+        if (resposta.ok && resultado.redirecionar) {
+          window.location.href = resultado.redirecionar;
+        } else {
+          alert(resultado.mensagem || 'Erro ao cadastrar');
+        }
+      } catch (erro) {
+        alert('Erro ao se conectar com o servidor.');
+        console.error(erro);
+      }
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous">
+    </script>
+</body>
+
+</html>

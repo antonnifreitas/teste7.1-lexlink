@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Login Empresas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .mensagem {
+      background-color: #eef;
+      padding: 10px;
+      border-left: 4px solid #00f;
+      margin-bottom: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 80px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+
+    .bottom-navbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #f8f9fa;
+      border-top: 1px solid #ddd;
+      padding: 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Bem-vindo, Empresa!</h1>
+
+  <div id="mensagem" class="mensagem">Carregando mensagem...</div>
+  <p>Esta é a página de login para empresas cadastradas.</p>
+
+  <!-- Botão Nova Diligência -->
+  <div class="bg-white d-flex flex-row-reverse p-3">
+    <button type="button" class="btn btn-secondary bg-dark" data-bs-toggle="modal" data-bs-target="#formularioModal">
+      Nova diligência
+    </button>
+    <h5 class="px-2">Nova diligência</h5>
+  </div>
+
+  <h2>Enviar Mensagem ao Administrador</h2>
+  <textarea id="mensagem-admin" placeholder="Digite sua mensagem ao administrador..."></textarea>
+  <button class="btn btn-primary" onclick="enviarMensagem()">Enviar</button>
+
+  <!-- Modal de Completar Perfil -->
+  <div class="modal fade" id="modalPerfil" tabindex="-1" aria-labelledby="modalPerfilLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="formPerfilEmpresa">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalPerfilLabel">Completar Perfil da Empresa</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <input type="text" class="form-control mb-2" name="usuario" placeholder="Usuário" required />
+            <input type="text" class="form-control mb-2" name="nomeEmpresa" placeholder="Nome da Empresa" required />
+            <input type="text" class="form-control mb-2" name="cnpj" placeholder="CNPJ" required />
+            <input type="email" class="form-control mb-2" name="email" placeholder="Email" required />
+            <input type="tel" class="form-control mb-2" name="telefone" placeholder="Telefone" required />
+            <p id="mensagemPerfil" class="mt-2 text-center small"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Salvar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de navegação inferior -->
+  <div class="bottom-navbar d-flex justify-content-around text-center">
+    <div class="flex-fill">
+      <button class="btn btn-link w-100" data-bs-toggle="modal" data-bs-target="#modalPerfil">Completar Perfil</button>
+    </div>
+    <div class="flex-fill">
+      <button class="btn btn-link w-100">Minhas Diligências</button>
+    </div>
+    <div class="flex-fill">
+      <button class="btn btn-link w-100">Cidades</button>
+    </div>
+  </div>
+
+  <!-- Modal de Cadastro de Diligência -->
+  <div class="modal fade" id="formularioModal" tabindex="-1" aria-labelledby="formularioModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="formularioModalLabel">Nova Diligência</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formDiligencia">
+            <div class="mb-3">
+              <label for="valor" class="form-label">Valor:</label>
+              <input type="number" class="form-control" id="valor" placeholder="Somente números e vírgula" required>
+            </div>
+            <div class="mb-3">
+              <label for="destinatario" class="form-label">Local/Endereço com CEP:</label>
+              <input type="text" class="form-control" id="destinatario" placeholder="Nome do destinatário" required>
+            </div>
+            <div class="mb-3">
+              <label for="descricao" class="form-label">Descrição:</label>
+              <textarea class="form-control" id="descricao" rows="3" placeholder="Digite a descrição"
+                required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+
+  <script>
+    async function carregarMensagem() {
+      try {
+        const resposta = await fetch('/api/mensagem-empresa');
+        const dados = await resposta.json();
+        document.getElementById('mensagem').textContent = dados.mensagem || 'Nenhuma mensagem disponível.';
+      } catch (erro) {
+        document.getElementById('mensagem').textContent = 'Erro ao carregar mensagem.';
+        console.error(erro);
+      }
+    }
+
+    async function enviarMensagem() {
+      const mensagem = document.getElementById('mensagem-admin').value.trim();
+      if (!mensagem) {
+        alert('Por favor, digite uma mensagem.');
+        return;
+      }
+
+      try {
+        const resposta = await fetch('/api/enviar-mensagem-empresa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mensagem })
+        });
+
+        const dados = await resposta.json();
+        if (dados.sucesso) {
+          alert('Mensagem enviada ao administrador com sucesso.');
+          document.getElementById('mensagem-admin').value = '';
+        } else {
+          alert('Erro ao enviar mensagem.');
+        }
+      } catch (erro) {
+        alert('Erro na conexão com o servidor.');
+        console.error(erro);
+      }
+    }
+
+    document.getElementById('formPerfilEmpresa').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const dados = {
+        usuario: form.usuario.value.trim(),
+        nomeEmpresa: form.nomeEmpresa.value.trim(),
+        cnpj: form.cnpj.value.trim(),
+        email: form.email.value.trim(),
+        telefone: form.telefone.value.trim()
+      };
+
+      const mensagem = document.getElementById('mensagemPerfil');
+
+      try {
+        const resposta = await fetch('/api/perfil-empresa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dados)
+        });
+
+        const resultado = await resposta.json();
+        if (resultado.sucesso) {
+          mensagem.textContent = "Perfil salvo com sucesso!";
+          mensagem.classList.remove("text-danger");
+          mensagem.classList.add("text-success");
+          form.reset();
+        } else {
+          mensagem.textContent = resultado.mensagem || "Erro ao salvar perfil.";
+          mensagem.classList.remove("text-success");
+          mensagem.classList.add("text-danger");
+        }
+      } catch (error) {
+        mensagem.textContent = "Erro de conexão com o servidor.";
+        mensagem.classList.add("text-danger");
+      }
+    });
+
+    carregarMensagem();
+    setInterval(carregarMensagem, 5000);
+  </script>
+
+</body>
+
+</html>
